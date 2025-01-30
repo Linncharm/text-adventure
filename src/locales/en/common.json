@@ -1,4 +1,5 @@
 {
+  "start": "Start Game",
   "scene1": {
     "text": "You wake up to find yourself in a strange room. It's dimly lit, and all you can hear is the sound of wind blowing.",
     "choice1": "Inspect the room",

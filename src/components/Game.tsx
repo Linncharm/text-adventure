@@ -4,7 +4,11 @@ import Scene from './Scene';
 import Choice from './Choice';
 import History from './History';
 
+import { useTranslation } from "react-i18next";
+
 const Game: React.FC = () => {
+  const { t } = useTranslation('common');
+
   const [currentSceneId, setCurrentSceneId] = useState<number>(1);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [history, setHistory] = useState<{ sceneText: string; choiceText: string }[]>([]);
@@ -52,12 +56,12 @@ const Game: React.FC = () => {
     <div className={`game-container ${isGameFading ? 'fade-in' : ''}`}>
       {!isGameStarted ? (
         <button
-          className={isButtonFading ? 'fade-out' : ''}
+          className={`rounded-2xl ${isButtonFading ? 'fade-in' : ''}`}
           onClick={() => {
             setIsGameStarted(true);
             startGame();
           }}>
-          开始游戏
+          {t('start')}
         </button>
       ) : (
         <>

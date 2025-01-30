@@ -6,7 +6,7 @@ interface HistoryProps {
 }
 
 const History: React.FC<HistoryProps> = ({historyItems}) => {
-  const {t} = useTranslation();
+  const {t} = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

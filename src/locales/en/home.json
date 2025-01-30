@@ -1,0 +1,24 @@
+{
+  "feature": {
+    "title": "Why Choose This Text Adventure Game",
+    "subtitle": "Highly customizable text adventure, create your own world!",
+    "content": {
+      "first": {
+        "title": "Endless Possibilities",
+        "description": "By customizing scenes and choice effects, players can create unique storylines. Every choice will influence future developments, bringing endless exploration and possibilities."
+      },
+      "second": {
+        "title": "Diverse Effects",
+        "description": "The game supports various visual effects, such as color, font size, and blur, allowing you to adjust the atmosphere based on the story context, making it more vivid and immersive."
+      },
+      "third": {
+        "title": "Simple and Easy to Use",
+        "description": "Even without programming experience, you can easily create a text adventure game using simple configuration tools. No coding required, allowing players to unleash their creativity and design unique adventure stories."
+      },
+      "fourth": {
+        "title": "Multilingual Support",
+        "description": "Supports multiple language switches, enabling your game to reach a broader global audience. Through simple configurations, different language versions can be implemented, breaking language barriers and allowing more people to experience your creation."
+      }
+    }
+  }
+}

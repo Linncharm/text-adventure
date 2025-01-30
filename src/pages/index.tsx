@@ -1,12 +1,12 @@
-import Game from '../components/Game';
+import HomePage from "@/pages/home";
 import React from 'react';
 
 const Home: React.FC = () => {
   return (
-    <div className="main-content">
-      <Game/>
+    <div>
+      <HomePage/>
     </div>
-  );
+  )
 };
 
 export default Home;

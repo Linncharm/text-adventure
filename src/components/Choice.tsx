@@ -9,7 +9,7 @@ interface ChoiceProps {
 
 const Choice: React.FC<ChoiceProps> = ({text, onClick, isTransitioning}) => {
 
-  const {t} = useTranslation();
+  const {t} = useTranslation('common');
 
   return (
     <button className={`choice-button ${isTransitioning ? 'transitioning' : ''}`} onClick={onClick}>
