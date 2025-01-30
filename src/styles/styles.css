@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/*body {*/
+/*    background-color: black;*/
+/*    color: white;*/
+/*    font-family: 'Press Start 2P', cursive;*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*    height: 100vh;*/
+/*    margin: 0;*/
+/*    text-align: center;*/
+/*    flex-wrap: wrap;*/
+/*}*/
+
+.main-content {
+  background-color: black;
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.history-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 80%;
+  /*height: 80%;*/
+  margin: 20px auto;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid white;
+  border-radius: 10px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.history-container::-webkit-scrollbar {
+  width: 20px;
+}
+
+.history-container::-webkit-scrollbar-thumb {
+  border-radius: 12px;
+  border: 6px solid rgba(0, 0, 0, 0);
+  box-shadow: 8px 0 0 #A5ADB7 inset;
+}
+
+.history-container::-webkit-scrollbar-thumb:hover {
+  box-shadow: 8px 0 0 #4A4A4A inset;
+}
+
+
+.history-item {
+  margin-bottom: 10px;
+
+}
+
+.scene-text {
+  opacity: 0;
+  animation: fadeIn 4s forwards; /* 动画设置为 1s */
+  opacity: 0;
+  animation: fadeIn 3s forwards; /* 动画设置为 1s */
+}
+
+.choice-text {
+
+}
+
+.game-container {
+  max-width: 100%;
+  width: 100%;
+  padding: 20px;
+}
+
+button {
+  background-color: black;
+  color: white;
+  border: 2px solid white;
+  padding: 10px 20px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: white;
+  color: black;
+}
+
+.scene-text {
+  font-size: 1.25rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: white;
+}
+
+.choices {
+  margin-top: 20px;
+}
+
+.choice-text {
+  font-size: 0.875rem;
+  color: gray;
+}
+
+.choice-button {
+  background-color: black;
+  color: white;
+  border: 2px solid white;
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.choice-button:hover {
+  background-color: white;
+  color: black;
+}
+
+/* 游戏容器样式 */
+.game-container {
+  position: relative;
+  padding: 20px;
+}
+
+/* 按钮初始样式 */
+.start-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+/* 按钮移动后的样式 */
+.start-button.moved {
+  transform: translateY(-100px); /* 让按钮上移 */
+  opacity: 0; /* 按钮消失 */
+}
+
+/* 场景文本和选择框 */
+.scene-text {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.choices {
+  margin-top: 20px;
+}
+
+.choice {
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+/*平滑移动*/
+
+.scene-text.transitioning {
+  animation: moveText 1s forwards;
+}
+
+@keyframes moveText {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+.choice-button.transitioning {
+  animation: fadeOut 0.5s forwards, fadeIn 0.5s 0.5s forwards;
+}
+
+.fade-in {
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+.fade-out {
+  animation: fadeOut 1.5s ease-in-out;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 定义光标的闪烁效果 */
+.cursor {
+  display: inline-block;
+  width: 2px; /* 光标宽度 */
+  color: black;
+  background-color: #ffffff; /* 光标颜色 */
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+
+

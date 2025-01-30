@@ -1,0 +1,99 @@
+{
+  "scene1": {
+    "text": "You wake up to find yourself in a strange room. It's dimly lit, and all you can hear is the sound of wind blowing.",
+    "choice1": "Inspect the room",
+    "choice2": "Leave the room"
+  },
+  "scene2": {
+    "text": "You find a cupboard, slightly open.",
+    "choice1": "Open the cupboard",
+    "choice2": "Leave the room"
+  },
+  "scene3": {
+    "text": "You push the door open and walk into a dimly lit corridor. At the end of the corridor, there is a faint light.",
+    "choice1": "Walk towards the light",
+    "choice2": "Return to the room"
+  },
+  "scene4": {
+    "text": "Inside the cupboard, you find an ancient key and a yellowed note. The note reads: Find the truth, only then can you leave.",
+    "choice1": "Pick up the key",
+    "choice2": "Leave the room"
+  },
+  "scene5": {
+    "text": "You walk towards the light and discover an ancient door with a lock. You remember the key from the cupboard.",
+    "choice1": "Use the key to open the door",
+    "choice2": "Return to the corridor"
+  },
+  "scene6": {
+    "text": "You pick up the key and feel a strange energy emanating from it. You decide to continue exploring.",
+    "choice1": "Walk towards the corridor",
+    "choice2": "Examine the note"
+  },
+  "scene7": {
+    "text": "You open the door with the key and enter an abandoned library. The bookshelves are covered in dust.",
+    "choice1": "Browse the books on the shelves",
+    "choice2": "Look for another exit"
+  },
+  "scene8": {
+    "text": "The text on the note is a bit blurry, but you can make out the words: 'The truth lies in the dark.' You feel confused.",
+    "choice1": "Keep moving forward",
+    "choice2": "Return to the room"
+  },
+  "scene9": {
+    "text": "You browse through the books and find one that records ancient secrets. The book reveals an astonishing truth about this place.",
+    "choice1": "Study the secrets in the book",
+    "choice2": "Leave the library"
+  },
+  "scene10": {
+    "text": "You search around the library and eventually find a hidden door. You open it and find yourself back in the room.",
+    "choice1": "Start exploring again",
+    "choice2": "Give up and quit the game"
+  },
+  "scene11": {
+    "text": "The book describes a terrifying history, seemingly related to this room and your existence. You begin to question whether you are part of this history.",
+    "choice1": "Continue reading the book's secrets",
+    "choice2": "Give up and leave the library"
+  },
+  "scene12": {
+    "text": "You choose to give up and quit the game. The truth of this world may never be revealed.",
+    "choice1": "Exit the game"
+  },
+  "scene13": {
+    "text": "The last page of the book shows strange symbols. As you try to interpret them, the library suddenly starts shaking.",
+    "choice1": "Explore the source of the shaking",
+    "choice2": "Escape the library"
+  },
+  "scene14": {
+    "text": "You follow the direction of the shaking and discover a hidden underground passage. At the end of the passage, there is a heavy iron door with strange symbols on it.",
+    "choice1": "Push open the iron door",
+    "choice2": "Return to the library"
+  },
+  "scene15": {
+    "text": "You push open the iron door and enter a huge underground hall. In the center of the hall is an altar with a glowing blue crystal on it.",
+    "choice1": "Touch the crystal",
+    "choice2": "Examine the altar"
+  },
+  "scene16": {
+    "text": "As you touch the crystal, you feel a powerful energy flow into your body. You suddenly realize that this place is an ancient ritual site.",
+    "choice1": "Perform the ritual",
+    "choice2": "Escape the underground hall"
+  },
+  "scene17": {
+    "text": "You examine the surroundings of the altar and find a carved stone slab. The slab is engraved with mysterious text.",
+    "choice1": "Try to interpret the text on the slab",
+    "choice2": "Leave the altar"
+  },
+  "scene18": {
+    "text": "You perform the ritual, and as the crystal's light grows brighter, your surroundings begin to blur. Suddenly, a powerful force pulls you into the crystal.",
+    "choice1": "Continue the ritual"
+  },
+  "scene19": {
+    "text": "You successfully interpret the text on the slab, which reveals a secret about escaping this place. You decide to try to implement this secret.",
+    "choice1": "Implement the escape plan",
+    "choice2": "Leave the underground hall"
+  },
+  "scene20": {
+    "text": "You follow the instructions on the slab and successfully escape this place, embracing the light of freedom.",
+    "choice1": "End the game"
+  }
+}
