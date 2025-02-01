@@ -4,13 +4,17 @@ import Scene from './Scene';
 import Choice from './Choice';
 import History from './History';
 import Loading from './Loading'
-import {sleep} from "@/utils";
+import { useTranslation } from 'react-i18next';
+
 
 interface GameProps {
   gameId: string;
 }
 
 const Game: React.FC<GameProps> = ({ gameId }) => {
+
+  const { i18n } = useTranslation('common');
+
   const [gameData, setGameData] = useState<GameDataDto>();
   const [currentSceneId, setCurrentSceneId] = useState<number>(1);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);

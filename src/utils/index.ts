@@ -40,3 +40,19 @@ export const parseTextWithEffects = (inputText: string) => {
     effects: result // 包含特效类型和内容的数组
   };
 };
+
+export const storage = (method: 'get' | 'set' | 'remove', key: string, value?: string) => {
+    try {
+      if (method === 'get') {
+        return localStorage.getItem(key);
+      }
+      else if (method === 'set') {
+        localStorage.setItem(key, value!);
+      }
+      else if (method === 'remove') {
+        localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error('localStorage error', error);
+    }
+}

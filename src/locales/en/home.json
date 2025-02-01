@@ -20,5 +20,47 @@
         "description": "Supports multiple language switches, enabling your game to reach a broader global audience. Through simple configurations, different language versions can be implemented, breaking language barriers and allowing more people to experience your creation."
       }
     }
+  },
+  "comment": {
+    "title": "What Our Players Say",
+    "subtitle": "Hear from our players about their experience with the game.",
+    "content": {
+      "first": {
+        "name": "John",
+        "comment": "This game is amazing! The customization options are endless and very intuitive."
+      },
+      "second": {
+        "name": "Emily",
+        "comment": "I love the diverse effects and the immersive experience it provides."
+      },
+      "third": {
+        "name": "Michael",
+        "comment": "It's so easy to create my own adventure stories without any coding knowledge."
+      },
+      "fourth": {
+        "name": "Sarah",
+        "comment": "The multilingual support is fantastic. I can share my game with friends around the world."
+      },
+      "fifth": {
+        "name": "Jessica",
+        "comment": "A truly unique and engaging text adventure game that keeps me hooked."
+      },
+      "sixth": {
+        "name": "David",
+        "comment": "The game keeps getting better with every update. I can't wait for more."
+      },
+      "seventh": {
+        "name": "Sophia",
+        "comment": "I can't stop playing! The storylines are so captivating and well-written."
+      },
+      "eighth": {
+        "name": "James",
+        "comment": "A perfect blend of creativity and fun. Highly recommend it to everyone."
+      },
+      "ninth": {
+        "name": "Olivia",
+        "comment": "The best text adventure game I've ever played. It's simply outstanding."
+      }
+    }
   }
 }
