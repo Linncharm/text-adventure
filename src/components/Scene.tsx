@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import useTypingEffect from '../hooks/useTypingEffect';
 import { useTranslation } from 'react-i18next';
 import TextWithEffects from '../components/Text/TextWithEffects'
@@ -28,8 +28,10 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
     isTransitioning,
     onStatusChange,
     isTypingEffect,
-    showCompleteText
+    showCompleteText = false
   } = props;
+
+  const [isEffectTextStart, setIsEffectTextStart] = useState(false);
 
   // TODO 2.1 fontSizeClass又失效了
   const fontSizeClass = isCustomizeSceneFontSize ? `text-[${sceneFontSize}]` : `text-${sceneFontSize}`;
@@ -41,12 +43,9 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
 
   }, [sceneFontFamily, sceneFontSize]);
 
-  // TODO 2.1 怎么解决重新渲染时旧钩子的调用问题（根本问题）
-  // TODO 换个思路，重新加载Game页面？history采用localstorage存储？然后开创一个存档组件？
   let {
     displayedText,
-    effectText,
-    effectType
+    effectDetail,
   } = useTypingEffect({
     text: text,
     speed: speed,
@@ -56,15 +55,19 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
   });
 
 
-  // TODO 实现特效文字与普通文字的平滑拼接
   return (
-    <div
-      className={`scene-text ${isTransitioning ? 'transitioning' : ''} ${fontFamilyClass} ${fontSizeClass}`}>
-      {
-        showCompleteText ? (<span>{t(text)}</span>) : (<TextWithEffects text={displayedText} />)
+    <div className={`scene-text ${isTransitioning ? 'transitioning' : ''} ${fontFamilyClass} ${fontSizeClass}`}>
+      {(
+        <TextWithEffects
+          effectDetail={effectDetail}
+          text={showCompleteText ? t(text) : displayedText}
+          triggerCompleteEffect={showCompleteText}
+        />
+        )
       }
       <span className="cursor">|</span>
     </div>
+
   );
 };
 

@@ -24,7 +24,7 @@ const Index = () => {
   }, [theme]);
 
   const router = useRouter();
-  const { locale,asPath,pathname,query } = router
+  const { locale,asPath,query } = router
 
   const changeLanguage = async (lng: string) => {
     console.log('changeLanguage', lng);
@@ -65,8 +65,8 @@ const Index = () => {
               changeLanguage(i18n.language === 'en' ? 'zh' : 'en')
                 .then(() => {
                   console.log('change language success',i18n.language);
-                  console.log('router',locale,asPath,pathname,query);
-                  router.push({ pathname, query }, asPath, { locale: i18n.language })
+                  console.log('router',locale,asPath,query);
+                  router.push({ query }, asPath, { locale: i18n.language })
                     .then(() => setLoading(false));
                 });
             }}

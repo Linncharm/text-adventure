@@ -5,6 +5,8 @@ interface ParseTextWithEffectsReturn {
   endIdx: number;
 }
 
+const EFFECTS_TAG_LENGTH = 12; // (effect:aaa) = 12
+
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -21,11 +23,18 @@ export const parseTextWithEffects = (inputText: string) => {
     normalText += inputText.slice(lastIndex, offset); // 获取正常文本
     normalText += content; // 将匹配到的特效内容加入 normalText
     // 保存特效信息，包括特效类型、特效内容和特效在文本中的位置
+
+    // 计算当前特效的 `startIdx` 和 `endIdx`
+    const startIdx = result.length === 0
+      ? offset
+      : offset - (result.length * 2 * EFFECTS_TAG_LENGTH + result.length); // 减去前面标签的长度
+    const endIdx = startIdx + content.length; // 结束位置 = 开始位置 + 内容长度
+
     result.push({
       effectType,
       content,
-      startIdx: offset,  // 特效文本开始位置
-      endIdx: offset + content.length  // 特效文本结束位置
+      startIdx,
+      endIdx
     });
     lastIndex = offset + match.length; // 更新上一个特效的结束位置
     return ''; // 返回空字符串，不替换实际内容
