@@ -1,36 +1,49 @@
-// pages/_app.tsx
+// 📂 pages/_app.tsx
 import React from 'react';
 
-import '../styles/styles.css';
-
-import {appWithTranslation} from 'next-i18next';
-import {AppProps} from 'next/app'
-import '../locales/index'
-
-import { ThemeProvider } from 'next-themes';
-import Head from 'next/head'
-
+import ProgressBar from "@/components/Layout/components/ProgressBar";
 import Layout from "@/components/Layout";
+import { LoadingProvider, useLoading } from '@/context/LoadingContext';
 
-function MyApp({Component, pageProps}: AppProps) {
+import { appWithTranslation } from 'next-i18next';
+import { AppProps } from 'next/app';
+import { ThemeProvider } from 'next-themes';
+import Head from 'next/head';
 
+import '../styles/styles.css';
+import '../locales/index';
+
+
+
+function MyApp({ Component, pageProps,router }: AppProps) {
   return (
-    <ThemeProvider>
-      <Head>
-        <title>Text Adventure</title>
-        <meta name="description" content="This is a description of my app." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta charSet="UTF-8" />
-        <link rel="icon" href="/favicon1.ico"/>
-      </Head>
-      <Layout>
-        <div className="transition-background-color duration-200 ease-in-out min-h-screen">
-          <Component {...pageProps} />
-        </div>
-      </Layout>
-    </ThemeProvider>
+    <LoadingProvider> {/* ✅ 先包裹整个应用 */}
+      <Content Component={Component} pageProps={pageProps} router={router} />
+    </LoadingProvider>
+  );
+}
 
-)
+function Content({ Component, pageProps }:AppProps) {
+  const { loading } = useLoading();
+  return (
+    <>
+      <ProgressBar isLoading={loading} />
+      <ThemeProvider>
+        <Head>
+          <title>Text Adventure</title>
+          <meta name="description" content="This is a description of my app." />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta charSet="UTF-8" />
+          <link rel="icon" href="/favicon1.ico"/>
+        </Head>
+        <Layout>
+          <div className="transition-background-color duration-200 ease-in-out min-h-screen">
+            <Component {...pageProps} />
+          </div>
+        </Layout>
+      </ThemeProvider>
+    </>
+  );
 }
 
 export default appWithTranslation(MyApp);

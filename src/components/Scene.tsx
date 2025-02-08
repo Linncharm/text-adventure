@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from 'react';
+import React, { useEffect } from 'react';
 import useTypingEffect from '../hooks/useTypingEffect';
 import { useTranslation } from 'react-i18next';
 import TextWithEffects from '../components/Text/TextWithEffects'
@@ -13,11 +13,10 @@ interface SceneProps {
   isTransitioning: boolean;
   onStatusChange?: (status: string) => void;
   isTypingEffect?: boolean;
+  showCompleteText?: boolean;
 }
 
 const Scene: React.FC<SceneProps> = (props:SceneProps) => {
-
-  const [isSceneReset, setIsSceneReset] = useState(false);
 
   const {
     sceneFontFamily,
@@ -28,14 +27,15 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
     isSceneStared,
     isTransitioning,
     onStatusChange,
-    isTypingEffect
+    isTypingEffect,
+    showCompleteText
   } = props;
 
   // TODO 2.1 fontSizeClass又失效了
   const fontSizeClass = isCustomizeSceneFontSize ? `text-[${sceneFontSize}]` : `text-${sceneFontSize}`;
   const fontFamilyClass = sceneFontFamily ? `font-${sceneFontFamily}` : '';
 
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
 
   useEffect(() => {
 
@@ -45,7 +45,6 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
   // TODO 换个思路，重新加载Game页面？history采用localstorage存储？然后开创一个存档组件？
   let {
     displayedText,
-    displayedStatus,
     effectText,
     effectType
   } = useTypingEffect({
@@ -53,37 +52,18 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
     speed: speed,
     isGameStarted: isSceneStared,
     isTypingEffect: isTypingEffect || false,
-    isSceneReset: isSceneReset,
+    onStatusChange: onStatusChange
   });
 
 
-
-  if (onStatusChange) {
-    onStatusChange(displayedStatus);
-  }
-
-  // useEffect(() => {
-  //   if (displayedStatus === 'typing') {
-  //     setIsSceneReset(true);
-  //   } else {
-  //     setIsSceneReset(false);
-  //   }
-  //   console.log(`2. 检测到语言改变，重新渲染Scene 渲染前 ${isSceneReset} 渲染后 ${displayedStatus === 'typing'}`);
-  // }, [i18n.language]);
-
-  // console.log({displayedText, displayedStatus, effectText, effectType});
-
   // TODO 实现特效文字与普通文字的平滑拼接
   return (
-    <div className={`scene-text ${isTransitioning ? 'transitioning' : ''} ${fontFamilyClass} ${fontSizeClass}`}>
-      <span>
-        {
-          isTypingEffect ? (
-            <TextWithEffects text={displayedText} /> // 渲染带有动画的文本
-          ) : t(text)
-        }
-        <span className="cursor">|</span>
-      </span>
+    <div
+      className={`scene-text ${isTransitioning ? 'transitioning' : ''} ${fontFamilyClass} ${fontSizeClass}`}>
+      {
+        showCompleteText ? (<span>{t(text)}</span>) : (<TextWithEffects text={displayedText} />)
+      }
+      <span className="cursor">|</span>
     </div>
   );
 };

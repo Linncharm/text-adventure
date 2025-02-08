@@ -10,7 +10,8 @@ interface SectionHeaderProps {
 const SectionHeader: React.FC<SectionHeaderProps> = (props) => {
 
   const { icon, title, subtitle } = props;
-  const { t } = useTranslation('home');
+  const { t,i18n } = useTranslation('home');
+  console.log('SectionHeader render',i18n.language);
 
   return (
     <>

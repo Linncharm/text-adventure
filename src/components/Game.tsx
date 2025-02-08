@@ -4,7 +4,8 @@ import Scene from './Scene';
 import Choice from './Choice';
 import History from './History';
 import Loading from './Loading'
-import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/router';
+import { storage } from "@/utils";
 
 
 interface GameProps {
@@ -13,12 +14,13 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ gameId }) => {
 
-  const { i18n } = useTranslation('common');
+  const router = useRouter();
+  const { query } = router;
 
   const [gameData, setGameData] = useState<GameDataDto>();
   const [currentSceneId, setCurrentSceneId] = useState<number>(1);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
-  const [history, setHistory] = useState<{ sceneText: string; choiceText: string }[]>([]);
+  const [history, setHistory] = useState<{ sceneText: string; choiceText: string,nextSceneId:number }[]>([]);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [isTypingEffect, setIsTypingEffect] = useState<boolean>(true);
   const [isGameFading, setIsGameFading] = useState(false);
@@ -30,15 +32,35 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
   const startTimeRef = useRef<number | null>(null);
 
   const fetchGameData = async () => {
+
+    console.log('fetchGameHistoryData');
+
+    if (storage('get', `${gameId}-history`)) {
+      const historyData = storage('get', `${gameId}-history`);
+      if (!historyData) return;
+      setHistory(JSON.parse(historyData));
+      setCurrentSceneId(JSON.parse(historyData).pop().nextSceneId);
+      setIsLoadingComplete(true);
+    }
+
     console.log('fetchGameData');
+
+    if (storage('get', `${gameId}`)) {
+      const data = storage('get', `${gameId}`);
+      if (!data) return;
+      setIsLoadingComplete(true);
+      setGameData(JSON.parse(data));
+      return;
+    }
+
     const response = await fetch(`/api/games/${gameId}`);
     if (!response.ok) {
       console.error('Failed to fetch game data');
       return;
     }
     const data = await response.json();
-
     setGameData(data);
+    if (gameId) storage('set', `${query.id}`, JSON.stringify(data));
   };
 
   const handleLoadingComplete = () => {
@@ -112,6 +134,10 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
   const currentScene = Story.find((scene) => scene.sceneId === currentSceneId);
   if (!currentScene) return null;
 
+  const handleSceneStatusChange = (status: string) => {
+    setSceneStatus(status);
+  }
+
   const handleChoiceSelect = (nextSceneId: number, choiceText: string) => {
     if (sceneStatus === 'typing') {
       setIsTypingEffect(false);
@@ -120,7 +146,8 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
       setIsTypingEffect(true);
       setIsTransitioning(true);
       setTimeout(() => {
-        setHistory([...history, { sceneText: currentScene.text, choiceText }]);
+        setHistory([...history, { sceneText: currentScene.text, choiceText,nextSceneId }]);
+        storage('set', `${gameId}-history`, JSON.stringify([...history, { sceneText: currentScene.text, choiceText,nextSceneId }]));
         setCurrentSceneId(nextSceneId);
         setIsTransitioning(false);
       }, 1000); // Duration of the transition
@@ -130,18 +157,23 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
   return (
     <div className="main-content">
       <div className={`game-container ${isGameFading ? 'fade-in' : ''}`}>
-        {history.length > 0 && <History historyItems={history} />}
+        {history.length > 0 &&
+          <History historyItems={history} />
+        }
         <span>{gameId}</span>
         <Scene
           sceneFontFamily={currentScene.sceneFontFamily ?? defaultFontFamily}
           sceneFontSize={currentScene.sceneFontSize ?? defaultFontSize}
           isCustomizeSceneFontSize={currentScene.isCustomizeSceneFontSize ?? isCustomizeDefaultFontSize}
           text={currentScene.text}
+
           isTypingEffect={isTypingEffect}
+          showCompleteText={sceneStatus === 'finished'}
+
           speed={100}
           isSceneStared={isGameStarted}
           isTransitioning={isTransitioning}
-          onStatusChange={setSceneStatus}
+          onStatusChange={handleSceneStatusChange} // 通过scene间接传给hook
         />
         {currentScene.choices && (
           <div className={`choices ${isTransitioning ? 'transitioning' : ''}`}>
