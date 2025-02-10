@@ -4,7 +4,6 @@ import {initReactI18next} from 'react-i18next';
 import { getCookie } from 'cookies-next';
 
 const language = getCookie('i18nextLng') as string; // 从 cookie 中获取语言
-console.log('i18n init language', language);
 
 i18n
   .use(initReactI18next) // 初始化 react-i18next

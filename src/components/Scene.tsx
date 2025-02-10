@@ -1,67 +1,75 @@
-import React, { useEffect,useState } from 'react';
-import useTypingEffect from '../hooks/useTypingEffect';
+import React, {useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import TextWithEffects from '../components/Text/TextWithEffects'
+import { SpanElementProps } from '@/types/Game';
+
+type SceneStatus = 'waiting' | 'typing' | 'finished';
+
 
 interface SceneProps {
-  sceneFontFamily: string; // 一定存在，因为有default兜底
-  sceneFontSize: string; // 一定存在，因为有default兜底
-  isCustomizeSceneFontSize: boolean; // 一定存在，因为有default兜底
   text: string;
   speed: number;
-  isSceneStared: boolean;
+
   isTransitioning: boolean;
-  onStatusChange?: (status: string) => void;
-  isTypingEffect?: boolean;
-  showCompleteText?: boolean;
+  sceneStatus: SceneStatus;
+
+  onStatusChange: (status: SceneStatus) => void;
+  onCompleteText: (completeText: SpanElementProps[]) => void;
 }
 
 const Scene: React.FC<SceneProps> = (props:SceneProps) => {
 
   const {
-    sceneFontFamily,
-    sceneFontSize,
-    isCustomizeSceneFontSize,
-    text,
+    text, // transition结束后的新text
     speed,
-    isSceneStared,
     isTransitioning,
+    sceneStatus,
     onStatusChange,
-    isTypingEffect,
-    showCompleteText = false
+    onCompleteText
   } = props;
-
-  const [isEffectTextStart, setIsEffectTextStart] = useState(false);
-
-  // TODO 2.1 fontSizeClass又失效了
-  const fontSizeClass = isCustomizeSceneFontSize ? `text-[${sceneFontSize}]` : `text-${sceneFontSize}`;
-  const fontFamilyClass = sceneFontFamily ? `font-${sceneFontFamily}` : '';
 
   const { t } = useTranslation('common');
 
+  const oldText = useRef<string>(props.text);
+
+  // 监听 text 变化并更新 oldText
   useEffect(() => {
+    oldText.current = text;
+  }, [text]);
 
-  }, [sceneFontFamily, sceneFontSize]);
+  // status为finished，且transition结束或text没有变化后，返回true
+  const isFinished= () => {
+    if (oldText.current !== text) {
+      return false;
+    }
+    else if (sceneStatus === 'finished') {
+      return true;
+    }
+    return false;
+  }
 
-  let {
-    displayedText,
-    effectDetail,
-  } = useTypingEffect({
-    text: text,
-    speed: speed,
-    isGameStarted: isSceneStared,
-    isTypingEffect: isTypingEffect || false,
-    onStatusChange: onStatusChange
-  });
+  // console.table([{
+  //   isFinished: isFinished(),
+  //   isTransitioning,
+  //   oldText: oldText.current,
+  //   newText: text,
+  //   sceneStatus
+  // }]);
 
 
   return (
-    <div className={`scene-text ${isTransitioning ? 'transitioning' : ''} ${fontFamilyClass} ${fontSizeClass}`}>
+    <div className={`scene-text ${isTransitioning ? 'transitioning' : ''}`}>
       {(
         <TextWithEffects
-          effectDetail={effectDetail}
-          text={showCompleteText ? t(text) : displayedText}
-          triggerCompleteEffect={showCompleteText}
+          text={t(text)}
+          triggerCompleteEffect={isFinished()}
+
+          sceneStatus={sceneStatus}
+
+          speed={speed}
+
+          onCompleteText={onCompleteText}
+          onStatusChange={onStatusChange}
         />
         )
       }

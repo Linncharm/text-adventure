@@ -1,3 +1,5 @@
+import React from "react";
+
 type CustomizeFontSize = string;
 type FontSize = 'xs' | 'sm' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '8xl' | '9xl' | CustomizeFontSize;
 
@@ -31,4 +33,16 @@ interface Scene {
 export interface GameDataDto {
   DefaultSettings: DefaultSettings;
   Story: Scene[];
+}
+
+export type SpanElementProps = {
+  key: string;
+  content: string;
+  style?: React.CSSProperties;
+};
+
+export interface HistoryItem {
+  sceneText: SpanElementProps[],
+  choiceText: string,
+  nextSceneId:number
 }

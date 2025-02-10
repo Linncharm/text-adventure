@@ -77,12 +77,13 @@ html {
   max-height: 500px;
   position: relative;
 
-  /* 使用 mask-image 创建渐变透明效果 */
+  scroll-snap-type: y mandatory;  /* 强制按垂直方向对齐 */
+  scroll-padding-top: 5%; /* 滚动到顶部时留出 50% 的空间，确保内容位于中间 */
   /* 使用 mask-image 创建渐变透明效果 */
   mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0) 5%,  /* 顶部完全透明 */
-    rgba(0, 0, 0, 0.2) 15%, /* 轻微可见 */
+    rgba(0, 0, 0, 0) 10%,  /* 顶部完全透明 */
+    rgba(0, 0, 0, 0.2) 25%, /* 轻微可见 */
     rgba(0, 0, 0, 0.5) 50%, /* 逐渐变深 */ rgba(0, 0, 0, 0.85) 65%, /* 更深 */
     rgba(0, 0, 0, 1) 100%   /* 底部完全不透明 */
   );
@@ -90,10 +91,10 @@ html {
 }
 
 
-/*.history-container::-webkit-scrollbar {*/
-/*  display: none;*/
-/*  width: 20px;*/
-/*}*/
+.history-container::-webkit-scrollbar {
+  display: none;
+  width: 20px;
+}
 
 /*.history-container::-webkit-scrollbar-thumb {*/
 /*  border-radius: 12px;*/

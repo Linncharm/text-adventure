@@ -1,11 +1,9 @@
 import React, {useEffect, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
+import { HistoryItem } from "@/types/Game";
 
-interface HistoryProps {
-  historyItems: { sceneText: string; choiceText: string }[];
-}
+const History: React.FC<{ historyItems: HistoryItem[]}> = ({historyItems}) => {
 
-const History: React.FC<HistoryProps> = ({historyItems}) => {
   const {t} = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -19,8 +17,14 @@ const History: React.FC<HistoryProps> = ({historyItems}) => {
     <div className="history-container" ref={containerRef}>
       {historyItems.map((item, index) => (
         <div key={index} className="history-item">
-          <p className="scene-text">{t(item.sceneText)}</p>
-          <p className="choice-text">{t(item.choiceText)}</p>
+          <div className="scene-text">
+            {
+              item.sceneText.map((span) => (
+                <span key={span.key} style={span.style}>{span.content}</span>
+              ))
+            }
+          </div>
+          <div className="choice-text">{t(item.choiceText)}</div>
         </div>
       ))}
     </div>

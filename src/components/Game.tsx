@@ -7,6 +7,10 @@ import Loading from './Loading'
 import { useRouter } from 'next/router';
 import { storage } from "@/utils";
 
+import { SpanElementProps,HistoryItem } from "@/types/Game";
+
+//SceneStatus有三种状态，分别是：'waiting', 'typing', 'finished'
+type SceneStatus = 'waiting' | 'typing' | 'finished';
 
 interface GameProps {
   gameId: string;
@@ -14,17 +18,20 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ gameId }) => {
 
+  // 1. Choice->Scene->TextWithEffects
+  // 2. TextWithEffects->Scene
+  const [sceneStatus, setSceneStatus] = useState<SceneStatus>('waiting');
+
   const router = useRouter();
   const { query } = router;
 
   const [gameData, setGameData] = useState<GameDataDto>();
   const [currentSceneId, setCurrentSceneId] = useState<number>(1);
-  const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
-  const [history, setHistory] = useState<{ sceneText: string; choiceText: string,nextSceneId:number }[]>([]);
+  // const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const [isTypingEffect, setIsTypingEffect] = useState<boolean>(true);
+  // const [isTypingEffect, setIsTypingEffect] = useState<boolean>(true);
   const [isGameFading, setIsGameFading] = useState(false);
-  const [sceneStatus, setSceneStatus] = useState<string>('');
 
   const [progress, setProgress] = useState(0);
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
@@ -33,8 +40,6 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
 
   const fetchGameData = async () => {
 
-    console.log('fetchGameHistoryData');
-
     if (storage('get', `${gameId}-history`)) {
       const historyData = storage('get', `${gameId}-history`);
       if (!historyData) return;
@@ -42,8 +47,6 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
       setCurrentSceneId(JSON.parse(historyData).pop().nextSceneId);
       setIsLoadingComplete(true);
     }
-
-    console.log('fetchGameData');
 
     if (storage('get', `${gameId}`)) {
       const data = storage('get', `${gameId}`);
@@ -70,7 +73,7 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
   const startGame = () => {
     setIsGameFading(true);
     setTimeout(() => {
-      setIsGameStarted(true);
+      // setIsGameStarted(true);
       setIsGameFading(false);
     }, 1000); // 1秒后切换
   };
@@ -78,7 +81,7 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
   // 只有在数据准备好后才渲染游戏内容
   useEffect(() => {
     fetchGameData().then(() => {
-      setIsGameStarted(true);
+      // setIsGameStarted(true);
       startGame();
     });
   }, [gameId]);
@@ -130,26 +133,45 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
     )
   }
   const { DefaultSettings, Story } = gameData;
-  const { defaultFontSize, defaultFontFamily, isCustomizeDefaultFontSize } = DefaultSettings;
   const currentScene = Story.find((scene) => scene.sceneId === currentSceneId);
   if (!currentScene) return null;
 
-  const handleSceneStatusChange = (status: string) => {
+  const handleSceneStatusChange = (status: SceneStatus) => {
     setSceneStatus(status);
   }
 
+  const handleHistoryText = (isSubmit:boolean,nextSceneId?: number, choiceText?: string,completeText?: SpanElementProps[]) => {
+    if (completeText && !isSubmit) {
+      // 暂存span的文本
+      storage('set', `${gameId}-new-text`, JSON.stringify(completeText));
+    }
+    else if (isSubmit) {
+      const newHistoryText = storage('get', `${gameId}-new-text`);
+      if (!newHistoryText) return;
+      const temp:SpanElementProps[] = JSON.parse(newHistoryText);
+      const newHistory = [...history,{ sceneText: temp, choiceText: choiceText!,nextSceneId: nextSceneId! }];
+
+      storage('remove', `${gameId}-new-text`);
+      storage('set', `${gameId}-history`, JSON.stringify(newHistory));
+      setHistory(newHistory);
+      setCurrentSceneId(nextSceneId!);
+      setIsTransitioning(false);
+      setSceneStatus('waiting');
+    }
+
+  }
+
+  // TODO 频繁点击会出现文字错乱bug
   const handleChoiceSelect = (nextSceneId: number, choiceText: string) => {
     if (sceneStatus === 'typing') {
-      setIsTypingEffect(false);
       setSceneStatus('finished');
-    } else if (sceneStatus === 'finished') {
-      setIsTypingEffect(true);
-      setIsTransitioning(true);
+    }
+    else if (sceneStatus === 'finished') //重置sceneStatus
+    {
+      setIsTransitioning(true); // 设置完后Scene会渲染一次，保留着上一次的text
       setTimeout(() => {
-        setHistory([...history, { sceneText: currentScene.text, choiceText,nextSceneId }]);
-        storage('set', `${gameId}-history`, JSON.stringify([...history, { sceneText: currentScene.text, choiceText,nextSceneId }]));
-        setCurrentSceneId(nextSceneId);
-        setIsTransitioning(false);
+
+        handleHistoryText(true,nextSceneId, choiceText);
       }, 1000); // Duration of the transition
     }
   };
@@ -162,17 +184,14 @@ const Game: React.FC<GameProps> = ({ gameId }) => {
         }
         <span>{gameId}</span>
         <Scene
-          sceneFontFamily={currentScene.sceneFontFamily ?? defaultFontFamily}
-          sceneFontSize={currentScene.sceneFontSize ?? defaultFontSize}
-          isCustomizeSceneFontSize={currentScene.isCustomizeSceneFontSize ?? isCustomizeDefaultFontSize}
           text={currentScene.text}
 
-          isTypingEffect={isTypingEffect}
-          showCompleteText={sceneStatus === 'finished'}
-
           speed={100}
-          isSceneStared={isGameStarted}
           isTransitioning={isTransitioning}
+
+          sceneStatus={sceneStatus}
+
+          onCompleteText={(completeText) => handleHistoryText(false,undefined,undefined,completeText)}
           onStatusChange={handleSceneStatusChange} // 通过scene间接传给hook
         />
         {currentScene.choices && (
