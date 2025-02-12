@@ -1,0 +1,48 @@
+{
+    "login": {
+      "title": "欢迎回来",
+      "email": "邮箱地址",
+      "password": "密码",
+      "login": "登录",
+      "toRegister": "没有账号？立即注册",
+      "loginSuccess": "登录成功",
+      "loginError": "登录失败，请检查邮箱和密码",
+      "loading": "登录中...",
+      "toLogin": "已有账号？立即登录"
+    },
+    "register": {
+      "title": "创建账号",
+      "email": "邮箱地址",
+      "password": "密码",
+      "verificationCode": "验证码",
+      "sendCode": "发送验证码",
+      "register": "注册",
+      "toLogin": "已有账号？立即登录",
+      "codeSent": "验证码已发送到您的邮箱",
+      "sendCodeError": "发送验证码失败，请稍后重试",
+      "passwordTooShort": "密码至少需要6个字符",
+      "registerSuccess": "注册成功",
+      "registerError": "注册失败，请稍后重试",
+      "loading": "注册中...",
+      "countdown": "{seconds}秒后重新发送",
+      "toRegister": "没有账号？立即注册"
+    },
+    "common": {
+      "email": "邮箱地址",
+      "password": "密码",
+      "code": "验证码",
+      "emailPlaceholder": "请输入邮箱地址",
+      "passwordPlaceholder": "请输入密码",
+      "codePlaceholder": "请输入验证码",
+      "emailRequired": "请输入邮箱地址",
+      "passwordRequired": "请输入密码",
+      "codeRequired": "请输入验证码",
+      "invalidEmail": "请输入有效的邮箱地址",
+      "loading": "加载中...",
+      "passwordTooLong": "密码不能超过20个字符",
+      "passwordTooShort": "密码至少需要6个字符",
+      "passwordNeedsUppercase": "密码需要包含至少一个大写字母",
+      "passwordNeedsLowercase": "密码需要包含至少一个小写字母",
+      "passwordNeedsNumber": "密码需要包含至少一个数字"
+    }
+  }

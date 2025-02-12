@@ -61,7 +61,7 @@ const Scene: React.FC<SceneProps> = (props:SceneProps) => {
     <div className={`scene-text ${isTransitioning ? 'transitioning' : ''}`}>
       {(
         <TextWithEffects
-          text={t(text)}
+          text={text}
           triggerCompleteEffect={isFinished()}
 
           sceneStatus={sceneStatus}

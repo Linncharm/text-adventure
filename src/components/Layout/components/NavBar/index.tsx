@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { HomeOutlined, InfoCircleOutlined, CameraOutlined, GlobalOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
+import {
+  HomeOutlined,
+  InfoCircleOutlined,
+  CameraOutlined,
+  GlobalOutlined,
+  SunOutlined,
+  MoonOutlined,
+  PlayCircleOutlined,
+  LoginOutlined
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
 import {sleep, storage} from "@/utils";
@@ -55,7 +64,7 @@ const Index = () => {
         </li>
         <li>
           <Link href='/game'>
-            <CameraOutlined className="icon-style text-2xl" />
+            <PlayCircleOutlined className="icon-style text-2xl" />
           </Link>
         </li>
         <li>
@@ -90,6 +99,11 @@ const Index = () => {
               }}
             />
           )}
+        </li>
+        <li>
+          <Link href='/login'>
+            <LoginOutlined className="icon-style text-2xl" />
+          </Link>
         </li>
       </ul>
     </nav>

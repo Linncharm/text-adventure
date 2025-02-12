@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { parseTextWithEffects,sleep } from "@/utils";
+import { useTranslation } from "react-i18next";
 
 type SceneStatus = 'waiting' | 'typing' | 'finished';
 
@@ -21,12 +22,15 @@ interface TextWithEffectsProps {
 const TextWithEffects: React.FC<TextWithEffectsProps> = (props) => {
   const { text, triggerCompleteEffect,speed,onStatusChange,sceneStatus,onCompleteText } = props;
 
+  const { t,i18n } = useTranslation('common');
+  const translatedText = t(text);
+
 
   const [displayedText, setDisplayedText] = useState<SpanElementProps[]>([]);
   const currentIndex = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { normalText, effects } = parseTextWithEffects(text);
+  const { normalText, effects } = parseTextWithEffects(translatedText);
 
   const effectType = effects.map((item) => item.effectType); // 获取特效类型
   const effectText = effects.map((item) => item.content); // 获取特效内容
@@ -185,6 +189,8 @@ const TextWithEffects: React.FC<TextWithEffectsProps> = (props) => {
     if (triggerCompleteEffect) {
       // 直接显示完整文本，并重置 currentIndex
       setDisplayedText(completeText);
+
+      //  TODO: 02/10 目前只能返回当前语言的文本，多语言是动态变化还是静态备份？
       onCompleteText(completeText);
       currentIndex.current = 0;
       onStatusChange('finished');

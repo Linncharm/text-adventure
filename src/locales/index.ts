@@ -12,11 +12,13 @@ i18n
       en: {
         home: require('./en/home.json'), // 英文翻译文件
         common: require('./en/common.json'), // 英文翻译文件
+        login: require('./en/login.json')
 
       },
       zh: {
         home: require('./zh/home.json'), // 中文翻译文件
         common: require('./zh/common.json'), // 中文翻译文件
+        login: require('./zh/login.json')
       },
     },
     lng: language || 'en', // 初始化时直接读取存储的语言

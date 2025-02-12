@@ -1,0 +1,48 @@
+{
+    "login": {
+      "title": "Welcome Back",
+      "email": "Email Address",
+      "password": "Password",
+      "login": "Login",
+      "toRegister": "No account? Sign up now",
+      "loginSuccess": "Login successful",
+      "loginError": "Login failed, please check your email and password",
+      "loading": "Logging in...",
+      "toLogin": "Already have an account? Login now"
+    },
+    "register": {
+      "title": "Create Account",
+      "email": "Email Address",
+      "password": "Password",
+      "verificationCode": "Verification Code",
+      "sendCode": "Send Code",
+      "register": "Sign Up",
+      "toLogin": "Already have an account? Login now",
+      "codeSent": "Verification code has been sent to your email",
+      "sendCodeError": "Failed to send verification code, please try again later",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "registerSuccess": "Registration successful",
+      "registerError": "Registration failed, please try again later",
+      "loading": "Signing up...",
+      "countdown": "Resend in {seconds}s",
+      "toRegister": "No account? Sign up now"
+    },
+    "common": {
+      "email": "Email Address",
+      "password": "Password",
+      "code": "Verification Code",
+      "emailPlaceholder": "Please enter your email address",
+      "passwordPlaceholder": "Please enter your password",
+      "codePlaceholder": "Please enter verification code",
+      "emailRequired": "Email address is required",
+      "passwordRequired": "Password is required",
+      "codeRequired": "Verification code is required",
+      "invalidEmail": "Please enter a valid email address",
+      "loading": "Loading...",
+      "passwordTooLong": "Password must not exceed 20 characters",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordNeedsUppercase": "Password must contain at least one uppercase letter",
+      "passwordNeedsLowercase": "Password must contain at least one lowercase letter",
+      "passwordNeedsNumber": "Password must contain at least one number"
+    }
+  }
