@@ -9,6 +9,7 @@ export default {
     extend: {
       animation: {
         blink: 'dot-blink 1.5s steps(1, end) infinite',
+        'slideIn': 'slideIn 0.3s ease-out forwards',
       },
       keyframes: {
         'dot-blink': {
@@ -17,6 +18,16 @@ export default {
           '60%': { content: "'..'" },
           '80%, 100%': { content: "'...'" },
         },
+        slideIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateY(1rem)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translateY(0)'
+          },
+        }
       },
       colors: {
         background: "var(--background)",
@@ -38,5 +49,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar-hide')
+  ],
 } satisfies Config;
