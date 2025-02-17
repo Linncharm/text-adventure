@@ -25,7 +25,8 @@
       "registerError": "注册失败，请稍后重试",
       "loading": "注册中...",
       "countdown": "{seconds}秒后重新发送",
-      "toRegister": "没有账号？立即注册"
+      "toRegister": "没有账号？立即注册",
+      "emailRegistered": "邮箱已被注册"
     },
     "common": {
       "email": "邮箱地址",
@@ -39,6 +40,7 @@
       "codeRequired": "请输入验证码",
       "invalidEmail": "请输入有效的邮箱地址",
       "loading": "加载中...",
+      "emailInvalid": "邮箱地址无效",
       "passwordTooLong": "密码不能超过20个字符",
       "passwordTooShort": "密码至少需要6个字符",
       "passwordNeedsUppercase": "密码需要包含至少一个大写字母",

@@ -11,14 +11,22 @@ import { ThemeProvider } from 'next-themes';
 import Head from 'next/head';
 
 import '../styles/styles.css';
+import '../styles/reactflow-override.css'
 import '../locales/index';
 
+import { Toaster } from 'react-hot-toast';
+import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { createClient } from '@/lib/supabase/client'
 
 
 function MyApp({ Component, pageProps,router }: AppProps) {
+
+  const supabase = createClient();
   return (
-    <LoadingProvider> {/* ✅ 先包裹整个应用 */}
-      <Content Component={Component} pageProps={pageProps} router={router} />
+    <LoadingProvider>
+      <SessionContextProvider supabaseClient={supabase}>
+        <Content Component={Component} pageProps={pageProps} router={router} />
+      </SessionContextProvider>
     </LoadingProvider>
   );
 }
@@ -39,6 +47,7 @@ function Content({ Component, pageProps }:AppProps) {
         <Layout>
           <div className="transition-background-color duration-200 ease-in-out min-h-screen">
             <Component {...pageProps} />
+            <Toaster position="top-center" />
           </div>
         </Layout>
       </ThemeProvider>

@@ -24,8 +24,9 @@
       "registerSuccess": "Registration successful",
       "registerError": "Registration failed, please try again later",
       "loading": "Signing up...",
-      "countdown": "Resend in {seconds}s",
-      "toRegister": "No account? Sign up now"
+      "countdown": "Resend in {seconds} s",
+      "toRegister": "No account? Sign up now",
+      "emailRegistered": "Email has been registered"
     },
     "common": {
       "email": "Email Address",
@@ -39,6 +40,7 @@
       "codeRequired": "Verification code is required",
       "invalidEmail": "Please enter a valid email address",
       "loading": "Loading...",
+      "emailInvalid": "Invalid email address",
       "passwordTooLong": "Password must not exceed 20 characters",
       "passwordTooShort": "Password must be at least 6 characters",
       "passwordNeedsUppercase": "Password must contain at least one uppercase letter",

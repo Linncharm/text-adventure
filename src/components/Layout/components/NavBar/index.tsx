@@ -8,7 +8,9 @@ import {
   SunOutlined,
   MoonOutlined,
   PlayCircleOutlined,
-  LoginOutlined
+  LoginOutlined,
+  UserOutlined,
+  FormOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
@@ -51,20 +53,20 @@ const Index = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-transparent flex items-center p-4 z-50">
-      <ul className="flex gap-4">
+      <ul className="flex gap-4 w-full">
         <li>
           <Link href='/'>
-            <HomeOutlined className="icon-style text-2xl" />
+            <HomeOutlined className="icon-style text-2xl"/>
           </Link>
         </li>
         <li>
           <Link href='/about'>
-            <InfoCircleOutlined className="icon-style text-2xl" />
+            <InfoCircleOutlined className="icon-style text-2xl"/>
           </Link>
         </li>
         <li>
           <Link href='/game'>
-            <PlayCircleOutlined className="icon-style text-2xl" />
+            <PlayCircleOutlined className="icon-style text-2xl"/>
           </Link>
         </li>
         <li>
@@ -73,9 +75,9 @@ const Index = () => {
             onClick={() => {
               changeLanguage(i18n.language === 'en' ? 'zh' : 'en')
                 .then(() => {
-                  console.log('change language success',i18n.language);
-                  console.log('router',locale,asPath,query);
-                  router.push({ query }, asPath, { locale: i18n.language })
+                  console.log('change language success', i18n.language);
+                  console.log('router', locale, asPath, query);
+                  router.push({query}, asPath, {locale: i18n.language})
                     .then(() => setLoading(false));
                 });
             }}
@@ -100,11 +102,18 @@ const Index = () => {
             />
           )}
         </li>
-        <li>
-          <Link href='/login'>
-            <LoginOutlined className="icon-style text-2xl" />
-          </Link>
-        </li>
+        <div className="ml-auto flex gap-4">
+          <li>
+            <Link href='/profile'>
+              <UserOutlined className="icon-style text-2xl"/>
+            </Link>
+          </li>
+          <li>
+            <Link href='/dashboard'>
+              <FormOutlined className="icon-style text-2xl"/>
+            </Link>
+          </li>
+        </div>
       </ul>
     </nav>
   );
