@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import {useState, useRef, Dispatch, SetStateAction} from 'react'
 import { Dialog } from '@headlessui/react'
-import { Node, Edge } from 'reactflow'
+import { Node, Edge ,useNodesState} from 'reactflow'
+import { NodeEditor } from "@/components/SceneEditor/NodeEditor";
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -26,7 +27,7 @@ interface Scene {
 }
 
 const initStoryNode: Node<NodeData> = {
-  id: '1',
+  id: `story-${Date.now()}`,
   type: 'story',
   position: { x: 250, y: 5 },
   data: {
@@ -36,12 +37,16 @@ const initStoryNode: Node<NodeData> = {
 }
 
 const DashboardPage = ()=> {
+
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true)
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
   const [isNewSceneModalOpen, setIsNewSceneModalOpen] = useState(false)
-  const [newSceneName, setNewSceneName] = useState('')
-  const [selectedScene, setSelectedScene] = useState<Scene | null>(null)
-  const [scenes, setScenes] = useState<Scene[]>([])
+  const [newSceneName, setNewSceneName] = useState('')                          // 新场景名称
+  const [selectedScene, setSelectedScene] = useState<Scene | null>(null)        // 在场景列表中选择的场景
+  const [scenes, setScenes] = useState<Scene[]>([])                             // 左侧场景列表
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null) // 选择的节点
+
+  const sceneEditorRef = useRef<{ setNodes: Dispatch<SetStateAction<Node<any, string | undefined>[]>> }>(null);
 
   // 处理场景数据更新
   const handleSceneDataUpdate = (sceneId: string, nodes: Node[], edges: Edge[]) => {
@@ -77,6 +82,47 @@ const DashboardPage = ()=> {
     setNewSceneName('')
     setIsNewSceneModalOpen(false)
     setSelectedScene(newScene)
+  }
+
+  // 处理节点选择
+  const handleNodeSelect = (node: Node<NodeData> | null) => {
+    //console.log('Selected Node:', node)
+    setSelectedNode(node)
+    // 如果你想在选择节点时自动打开右侧面板
+    node && setIsRightPanelOpen(true)
+  }
+
+  // 处理节点更新
+  const handleNodeUpdate = (updatedNode: Node<NodeData>) => {
+    //console.log('Updated Node:', updatedNode)
+    // 更新选中的节点
+    setSelectedNode(updatedNode)
+
+    // 同时更新场景中的节点数据
+    if (selectedScene) {
+      setScenes(currentScenes =>
+        currentScenes.map(scene =>
+          scene.id === selectedScene.id
+            ? {
+              ...scene,
+              lastModified: new Date().toISOString(),
+              editorData: {
+                ...scene.editorData,
+                nodes: scene.editorData.nodes.map(node =>
+                  node.id === updatedNode.id ? updatedNode : node
+                )
+              }
+            }
+            : scene
+        )
+      )
+    }
+
+    // TODO:更新react-flow的节点数据
+    // 对于相同的id，只用新节点的data替换旧的，其他不变
+    sceneEditorRef.current?.setNodes((nodes) =>
+      nodes.map((node) => (node.id === updatedNode.id ? {...node,data:updatedNode.data} : node))
+    )
   }
 
   return (
@@ -221,10 +267,12 @@ const DashboardPage = ()=> {
                 {/*</h2>*/}
                 <div className="h-full">
                   <SceneEditor
+                    ref={sceneEditorRef}
                     key={selectedScene.id}
                     initialNodes={selectedScene.editorData.nodes}
                     initialEdges={selectedScene.editorData.edges}
-                    onSave={(nodes, edges) => handleSceneDataUpdate(selectedScene.id, nodes, edges)}
+                    // onSave={(nodes, edges) => handleSceneDataUpdate(selectedScene.id, nodes, edges)}
+                    onNodeSelect={handleNodeSelect}
                   />
                 </div>
                 {/*<div className="text-gray-600 dark:text-gray-400">*/}
@@ -242,16 +290,29 @@ const DashboardPage = ()=> {
         {/* 右侧面板 */}
         <div className={`
           ${isRightPanelOpen ? 'w-64' : 'w-0'}
-          transition-all duration-300 ease-in-out
+          transition-all duration-300 ease-in-out overflow-hidden
           bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700
         `}>
+          {selectedNode && (
+            <NodeEditor
+              node={selectedNode}
+              onSaveNode={handleNodeUpdate}
+              onClose={() => {
+                setIsRightPanelOpen(false)
+              }}
+              isOpen={isRightPanelOpen}
+            />
+          )}
           {/* 右侧面板折叠按钮 */}
           <button
             onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
             className="absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800
-              p-1 rounded-l-lg shadow-md border border-r-0 border-gray-200 dark:border-gray-700"
+      p-1 rounded-l-lg shadow-md border border-r-0 border-gray-200 dark:border-gray-700"
           >
-            {isRightPanelOpen ? <ChevronRightIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
+            {isRightPanelOpen ?
+              <ChevronRightIcon className="h-5 w-5"/> :
+              <ChevronLeftIcon className="h-5 w-5"/>
+            }
           </button>
         </div>
       </div>
@@ -262,7 +323,7 @@ const DashboardPage = ()=> {
         onClose={() => setIsNewSceneModalOpen(false)}
         className="relative z-50"
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true"/>
 
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white dark:bg-gray-800 p-6">
