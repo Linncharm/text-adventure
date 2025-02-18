@@ -20,6 +20,7 @@ interface DirectionalConnections {
 
 export const StoryNode = memo(({ id, data, isConnectable,selected }: NodeProps<NodeData>) => {
 
+  console.log("story data", data)
   // 定义主题
   const COLOR_THEME = 'green'
   const styles = createContentStyles(COLOR_THEME)

@@ -4,6 +4,14 @@ export default {
   darkMode: ['class', '[data-theme="dark"]'],
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    './components/**/styles/*.{js,ts,jsx,tsx}',
+  ],
+  safelist: [
+    // 如果有需要动态使用的类名，可以在这里列出
+    {
+      pattern: /(bg|text|border|shadow|ring)-(green|blue|red|yellow)-(50|100|200|400|500|600|700|800|900)/,
+      variants: ['hover', 'dark', 'dark:hover'],
+    },
   ],
   theme: {
     extend: {
@@ -19,11 +27,11 @@ export default {
           '80%, 100%': { content: "'...'" },
         },
         slideIn: {
-          '0%': { 
+          '0%': {
             opacity: '0',
             transform: 'translateY(1rem)'
           },
-          '100%': { 
+          '100%': {
             opacity: '1',
             transform: 'translateY(0)'
           },
@@ -50,6 +58,6 @@ export default {
     },
   },
   plugins: [
-    require('tailwind-scrollbar-hide')
+    require('tailwind-scrollbar-hide'),
   ],
 } satisfies Config;

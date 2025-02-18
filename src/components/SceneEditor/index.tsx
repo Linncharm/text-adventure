@@ -1,15 +1,13 @@
-import {useCallback, useState, useRef, useEffect, SetStateAction, Dispatch, forwardRef, useImperativeHandle} from 'react'
+import React, {useCallback, useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo} from 'react'
 import ReactFlow, {
   Node,
   Edge,
-  Controls,
   SelectionMode,
   Background,
   Connection,
   addEdge,
   useNodesState,
   useEdgesState, Position, MarkerType,
-  useReactFlow,
   OnSelectionChangeParams,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
@@ -18,9 +16,11 @@ import { ChoiceNode } from './ChoiceNode'
 import { Toolbar } from "@/components/SceneEditor/ToolBar";
 import { NodeData } from './types'
 import { selectionStyles } from './styles/section'
+import { debouncedFn, throttledFn } from '@/utils/performance'
 
 const DEFAULT_CHOICE_NODE_HEIGHT = 122
 const DEFAULT_STORY_NODE_HEIGHT = 200
+const THROTTLE_TIME = 10
 
 interface SceneEditorProps {
   initialNodes: Node[]
@@ -58,8 +58,53 @@ const SceneEditor = forwardRef(({
 }: SceneEditorProps,ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
-
   const [isPanning, setIsPanning] = useState(false)
+
+  // 使用 useMemo 缓存静态配置
+  const flowConfig = useMemo(() => ({
+    defaultEdgeOptions,
+    nodeTypes,
+    minZoom: 0.2,
+    selectionMode: SelectionMode.Partial,
+    selectionOnDrag: true,
+    panOnDrag: [1],
+    selectNodesOnDrag: true,
+    multiSelectionKeyCode: "Shift",
+    deleteKeyCode: "Delete",
+  }), [])
+
+  // TODO 节点数大于 1 时才做节流处理
+  // 节流处理节点变化
+  const throttledNodesChange = useCallback(
+    throttledFn((changes: any) => {
+      onNodesChange(changes)
+    }, THROTTLE_TIME),
+    []
+  )
+
+  // 节流处理边的变化
+  const throttledEdgesChange = useCallback(
+    throttledFn((changes: any) => {
+      onEdgesChange(changes)
+    }, THROTTLE_TIME),
+    []
+  )
+
+  // 节流处理连接
+  const throttledConnect = useCallback(
+    throttledFn((params: Connection) => {
+      setEdges((eds) => addEdge(params, eds))
+    }, THROTTLE_TIME),
+    [setEdges]
+  )
+
+  // 防抖处理选择变化
+  const debouncedSelectionChange = useCallback(
+    debouncedFn((params: OnSelectionChangeParams) => {
+      selectedNodesRef.current = params.nodes
+    }, 100),
+    []
+  )
 
   useImperativeHandle(ref, () => ({
     setNodes,
@@ -93,247 +138,143 @@ const SceneEditor = forwardRef(({
     }
   }, [])
 
-  // 处理选择变化
-  const handleSelectionChange = useCallback((params: OnSelectionChangeParams) => {
-    selectedNodesRef.current = params.nodes
-    if (params.nodes.length < 2) {
-    }
-  }, [])
-
-  // 获取相反的方向
   const getOppositePosition = (position: Position): Position => {
     switch (position) {
-      case Position.Top:
-        return Position.Bottom
-      case Position.Right:
-        return Position.Left
-      case Position.Bottom:
-        return Position.Top
       case Position.Left:
         return Position.Right
-      default:
+      case Position.Right:
         return Position.Left
+      case Position.Top:
+        return Position.Bottom
+      case Position.Bottom:
+        return Position.Top
+      default:
+        return Position.Right
     }
   }
 
-  // 修改创建 Choice 节点的函数
-  const createChoiceNode = useCallback((sourceNodeId: string, position: Position) => {
-    const sourceNode = nodes.find(node => node.id === sourceNodeId)
-    if (!sourceNode) return
-
-    const offsetX = (sourceNode.width || 230) + 150;
-    const offsetY = (sourceNode.height || 150) + 150;
-    const newNodePosition = { ...sourceNode.position }
-
-    // 根据方向调整位置
-    switch (position) {
-      case Position.Top:
-        newNodePosition.y -= (150 + DEFAULT_STORY_NODE_HEIGHT)
-        newNodePosition.x += offsetX
-        break
-      case Position.Right:
-        newNodePosition.x += offsetX
-        break
-      case Position.Bottom:
-        newNodePosition.y += offsetY
-        newNodePosition.x += offsetX
-        break
-      case Position.Left:
-        newNodePosition.x -= offsetX
-        break
-    }
-
-    const newNode:Node<NodeData> = {
-      id: `choice-${Date.now()}`,
-      type: 'choice',
-      position: newNodePosition,
-      data: {
-        title: '新选择节点',
-        choices: [
-          { text: '选项 1', nextNodeId: '' },
-          { text: '选项 2', nextNodeId: '' }
-        ],
-        connectedNodes: [], // 初始化为空数组
-        connectedFrom: {
-          nodeId: sourceNodeId,
-          position: position
-        },
-      }
-    }
-
-    const newEdge = {
-      id: `edge-${sourceNodeId}-${newNode.id}`,
-      source: sourceNodeId,
-      target: newNode.id,
-      sourceHandle: position,
-      //targetHandle: getOppositePosition(position),
-      targetHandle: Position.Left,
-      type: 'smoothstep'
-    }
-
-    // console.log("new edge from story", newEdge)
-
-    // 更新源节点，标记该方向已连接
-    setNodes(nds =>
-      nds.map(node =>
-        node.id === sourceNodeId
-          ? {
-            ...node,
-            data: {
-              ...node.data,
-              connectedNodes: [...(node.data.connectedNodes || []), newNode.id],
-              directionalConnections: {
-                ...(node.data.directionalConnections || {
-                  [Position.Top]: false,
-                  [Position.Right]: false,
-                  [Position.Bottom]: false,
-                  [Position.Left]: false
-                }),
-                [position]: true
-              }
-            }
-          }
-          : node
-      )
-    )
-
-
-    setNodes(nds => [...nds, newNode])
-    setEdges(eds => [...eds, newEdge])
-  }, [nodes, setNodes, setEdges])
-
-  // 修改创建 Story 节点的函数
-  const createStoryNode = useCallback((
+  // 优化创建节点函数
+  const createNode = useCallback((
+    type: 'choice' | 'story',
     sourceNodeId: string,
     position: Position,
-    sourcePosition: Position,
-    targetPosition: Position
+    additionalParams = {}
   ) => {
     const sourceNode = nodes.find(node => node.id === sourceNodeId)
     if (!sourceNode) return
 
-    console.log("Choice窗口大小",sourceNode.width,sourceNode.height)
-    const offsetX = (sourceNode.width || 230) + 150;
-    const offsetY = (sourceNode.height || 150) + 150;
+    const { width = 230, height = 150 } = sourceNode
+    const offsetX = width! + 150
+    const offsetY = height! + 150
 
-    const newNodePosition = { ...sourceNode.position }
-    // 根据方向调整位置
-    switch (position) {
-      case Position.Top:
-        newNodePosition.y -= (150 + DEFAULT_CHOICE_NODE_HEIGHT)
-        break
-      case Position.Right:
-        newNodePosition.x += offsetX
-        break
-      case Position.Bottom:
-        newNodePosition.y += offsetY
-        break
-      case Position.Left:
-        newNodePosition.x -= offsetX
-        break
+    const positionMap = new Map([
+      [Position.Top, { x: offsetX, y: -(150 + (type === 'choice' ? DEFAULT_CHOICE_NODE_HEIGHT : DEFAULT_STORY_NODE_HEIGHT)) }],
+      [Position.Right, { x: offsetX, y: 0 }],
+      [Position.Bottom, { x: offsetX, y: offsetY }],
+      [Position.Left, { x: -offsetX, y: 0 }]
+    ])
+
+    const offset = positionMap.get(position) || { x: 0, y: 0 }
+    const newPosition = {
+      x: sourceNode.position.x + offset.x,
+      y: sourceNode.position.y + offset.y
     }
 
-    const newNode:Node<NodeData> = {
-      id: `story-${Date.now()}`,
-      type: 'story',
-      position: newNodePosition,
+    const newNode = {
+      id: `${type}-${Date.now()}`,
+      type,
+      position: newPosition,
       data: {
-        title: '新故事节点',
-        content: '在这里编写故事内容...',
-        connectedNodes: [],
+        ...additionalParams,
         connectedFrom: {
           nodeId: sourceNodeId,
-          position: position
+          position
         },
+        connectedNodes: [],
         directionalConnections: {
           [Position.Top]: false,
           [Position.Right]: false,
           [Position.Bottom]: false,
           [Position.Left]: false,
-          [getOppositePosition(position)]: true,
+          [getOppositePosition(position)]: type === 'story'
         }
       }
     }
 
-    const newEdge = {
-      id: `edge-${sourceNodeId}-${newNode.id}`,
-      // source: newNode.id,
-      // target: sourceNodeId,
-      source: sourceNodeId,
-      target: newNode.id,
-      sourceHandle: sourcePosition,
-      targetHandle: targetPosition,
-      type: 'smoothstep'
-    }
-
-    // console.log("new edge from choice", newEdge)
-
-    // 更新源节点，标记该方向已连接
-    setNodes(nds =>
-      nds.map(node =>
-        node.id === sourceNodeId
-          ? {
-            ...node,
-            data: {
-              ...node.data,
-              connectedNodes: [...(node.data.connectedNodes || []), newNode.id],
-              directionalConnections: {
-                ...(node.data.directionalConnections || {
-                  [Position.Top]: false,
-                  [Position.Right]: false,
-                  [Position.Bottom]: false,
-                  [Position.Left]: false
-                }),
-                [position]: true
+    // 批量更新所有状态
+    requestAnimationFrame(() => {
+      setNodes(prev => {
+        const updatedNodes = prev.map(node =>
+          node.id === sourceNodeId
+            ? {
+              ...node,
+              data: {
+                ...node.data,
+                connectedNodes: [...(node.data.connectedNodes || []), newNode.id],
+                directionalConnections: {
+                  ...(node.data.directionalConnections || {
+                    [Position.Top]: false,
+                    [Position.Right]: false,
+                    [Position.Bottom]: false,
+                    [Position.Left]: false
+                  }),
+                  [position]: true
+                }
               }
             }
-          }
-          : node
-      )
-    )
+            : node
+        )
+        return [...updatedNodes, newNode]
+      })
 
-    setNodes(nds => [...nds, newNode])
-    setEdges(eds => [...eds, newEdge])
+      setEdges(prev => [
+        ...prev,
+        {
+          id: `edge-${sourceNodeId}-${newNode.id}`,
+          source: sourceNodeId,
+          target: newNode.id,
+          sourceHandle: position,
+          targetHandle: Position.Left,
+          type: 'smoothstep'
+        }
+      ])
+    })
   }, [nodes, setNodes, setEdges])
 
-  // 添加事件监听器
+  // 优化事件监听器注册
   useEffect(() => {
-    const handleAddStoryNode = (e: CustomEvent<{
-      sourceNodeId: string
-      position: Position
-      sourcePosition: Position
-      targetPosition: Position
-    }>) => {
-      console.log(e.detail)
-      createStoryNode(
-        e.detail.sourceNodeId,
-        e.detail.position,
-        e.detail.sourcePosition,
-        e.detail.targetPosition
-      )
-    }
+    const handlers = new Map([
+      ['add-story-node', (e: CustomEvent) => {
+        const { sourceNodeId, position, sourcePosition, targetPosition } = e.detail
+        createNode('story', sourceNodeId, position, {
+          title: '新故事节点',
+          content: '在这里编写故事内容...',
+          sourcePosition,
+          targetPosition
+        })
+      }],
+      ['add-choice-node', (e: CustomEvent) => {
+        const { sourceNodeId, position } = e.detail
+        createNode('choice', sourceNodeId, position, {
+          title: '新选择节点',
+          choices: [
+            { text: '选项 1', nextNodeId: '' },
+            { text: '选项 2', nextNodeId: '' }
+          ]
+        })
+      }]
+    ])
 
-    const handleAddChoiceNode = (e: CustomEvent<{
-      sourceNodeId: string
-      position: Position
-    }>) => {
-      console.log(e.detail)
-      createChoiceNode(e.detail.sourceNodeId, e.detail.position)
-    }
-
-    window.addEventListener('add-story-node', handleAddStoryNode as EventListener)
-    window.addEventListener('add-choice-node', handleAddChoiceNode as EventListener)
+    handlers.forEach((handler, event) => {
+      window.addEventListener(event, handler as EventListener)
+    })
 
     return () => {
-      window.removeEventListener('add-story-node', handleAddStoryNode as EventListener)
-      window.removeEventListener('add-choice-node', handleAddChoiceNode as EventListener)
+      handlers.forEach((handler, event) => {
+        window.removeEventListener(event, handler as EventListener)
+      })
     }
-  }, [createChoiceNode, createStoryNode])
-
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  )
+  }, [createNode])
 
   // 修改节点点击处理函数
   const handleNodeClick = useCallback((_event: any, node: Node<NodeData>) => {
@@ -349,7 +290,6 @@ const SceneEditor = forwardRef(({
 
   return (
     <div className="flex flex-1 h-full">
-      {/* 主工作区 */}
       <div
         className={`flex-1 h-full ${selectionStyles}`}
         data-panning={isPanning}
@@ -357,28 +297,17 @@ const SceneEditor = forwardRef(({
         onMouseUp={handleMouseUp}
       >
         <ReactFlow
+          {...flowConfig}
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          onSelectionChange={handleSelectionChange}
+          onNodesChange={throttledNodesChange}
+          onEdgesChange={throttledEdgesChange}
+          onConnect={throttledConnect}
+          onSelectionChange={debouncedSelectionChange}
           onNodeClick={handleNodeClick}
-          onPaneClick={() => {
-            onNodeSelect?.(null)
-          }}
-          defaultEdgeOptions={defaultEdgeOptions}
-          minZoom={0.2}
-          fitView
-          selectionMode={SelectionMode.Partial}
-          selectionOnDrag={true}
-          panOnDrag={[1]}
-          selectNodesOnDrag={true}
-          multiSelectionKeyCode="Shift"
-          deleteKeyCode="Delete"
+          onPaneClick={() => onNodeSelect?.(null)}
         >
-          <Background/>
+          <Background />
         </ReactFlow>
       </div>
     </div>
