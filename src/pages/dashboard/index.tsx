@@ -31,8 +31,8 @@ const initStoryNode: Node<NodeData> = {
   type: 'story',
   position: { x: 250, y: 5 },
   data: {
-    title: '故事节点',
-    content: '在这里编写故事内容...'
+    title: '起点',
+    content: '在这里编写场景的起点...',
   }
 }
 
@@ -123,6 +123,10 @@ const DashboardPage = ()=> {
     sceneEditorRef.current?.setNodes((nodes) =>
       nodes.map((node) => (node.id === updatedNode.id ? {...node,data:updatedNode.data} : node))
     )
+  }
+
+  const handlePanelClick = (status:boolean) => {
+    setIsRightPanelOpen(status)
   }
 
   return (
@@ -273,6 +277,7 @@ const DashboardPage = ()=> {
                     initialEdges={selectedScene.editorData.edges}
                     // onSave={(nodes, edges) => handleSceneDataUpdate(selectedScene.id, nodes, edges)}
                     onNodeSelect={handleNodeSelect}
+                    onPanelClick={handlePanelClick}
                   />
                 </div>
                 {/*<div className="text-gray-600 dark:text-gray-400">*/}

@@ -27,6 +27,7 @@ interface SceneEditorProps {
   initialEdges: Edge[]
   onSave?: (nodes: Node[], edges: Edge[]) => void
   onNodeSelect?: (node: Node<NodeData> | null) => void
+  onPanelClick?: (status:boolean) => void
 }
 
 const nodeTypes = {
@@ -55,10 +56,34 @@ const SceneEditor = forwardRef(({
   initialEdges,
   onSave,
   onNodeSelect,
+  onPanelClick,
 }: SceneEditorProps,ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const [isPanning, setIsPanning] = useState(false)
+
+  // 添加计数器 ref
+  const storyCountRef = useRef<number>(0)
+  const choiceCountsRef = useRef<Map<string, number>>(new Map())
+
+  // 获取下一个节点编号
+  // TODO 增加删除节点功能
+  const getNextNodeNumber = useCallback((
+    type: 'story' | 'choice',
+    sourceNodeId?: string
+  ) => {
+    if (type === 'story') {
+      storyCountRef.current += 1
+      return storyCountRef.current
+    } else {
+      // 如果是选择节点，检查源节点的计数
+      if (!sourceNodeId) return 1
+      const currentCount = choiceCountsRef.current.get(sourceNodeId) || 0
+      const nextCount = currentCount + 1
+      choiceCountsRef.current.set(sourceNodeId, nextCount)
+      return nextCount
+    }
+  }, [])
 
   // 使用 useMemo 缓存静态配置
   const flowConfig = useMemo(() => ({
@@ -246,8 +271,9 @@ const SceneEditor = forwardRef(({
     const handlers = new Map([
       ['add-story-node', (e: CustomEvent) => {
         const { sourceNodeId, position, sourcePosition, targetPosition } = e.detail
+        const storyNumber = getNextNodeNumber('story')
         createNode('story', sourceNodeId, position, {
-          title: '新故事节点',
+          title: `故事-${storyNumber}`,
           content: '在这里编写故事内容...',
           sourcePosition,
           targetPosition
@@ -255,8 +281,9 @@ const SceneEditor = forwardRef(({
       }],
       ['add-choice-node', (e: CustomEvent) => {
         const { sourceNodeId, position } = e.detail
+        const choiceNumber = getNextNodeNumber('choice', sourceNodeId)
         createNode('choice', sourceNodeId, position, {
-          title: '新选择节点',
+          title: `选择${choiceNumber}`,
           choices: [
             { text: '选项 1', nextNodeId: '' },
             { text: '选项 2', nextNodeId: '' }
@@ -283,6 +310,13 @@ const SceneEditor = forwardRef(({
     onNodeSelect?.(node)
   }, [onNodeSelect])
 
+  // 点击画布时的处理
+  const handlePanelClick = useCallback(() => {
+    // 不清理，但是折叠
+    //onNodeSelect?.(null)
+    onPanelClick?.(false)
+  }, [onPanelClick])
+
   //当节点或边发生变化时保存
   useEffect(() => {
     //onSave(nodes, edges)
@@ -305,7 +339,7 @@ const SceneEditor = forwardRef(({
           onConnect={throttledConnect}
           onSelectionChange={debouncedSelectionChange}
           onNodeClick={handleNodeClick}
-          onPaneClick={() => onNodeSelect?.(null)}
+          onPaneClick={handlePanelClick}
         >
           <Background />
         </ReactFlow>
