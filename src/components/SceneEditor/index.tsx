@@ -8,7 +8,8 @@ import ReactFlow, {
   addEdge,
   useNodesState,
   useEdgesState, Position, MarkerType,
-  OnSelectionChangeParams,
+  OnSelectionChangeParams, ReactFlowInstance,
+  DefaultEdgeOptions
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { StoryNode } from './StoryNode'
@@ -36,17 +37,21 @@ const nodeTypes = {
 }
 
 // 添加默认边样式
-const defaultEdgeOptions = {
-  type: 'smoothstep',
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  type: 'bezier',
   markerEnd: {
-    type: MarkerType.Arrow,
-    width: 20,
-    height: 20,
-    color: '#6B7280',
+    type: MarkerType.ArrowClosed, // 使用闭合箭头，看起来更精致
+    width: 16, // 稍微调小一点
+    height: 16,
+    color: '#94A3B8', // 使用更柔和的颜色
+    strokeWidth: 2, // 添加箭头描边宽度
   },
   style: {
-    strokeWidth: 2,
-    stroke: '#6B7280',
+    strokeWidth: 3, // 稍微调细一点
+    stroke: '#94A3B8', // 使用相同的柔和颜色
+    transition: 'all 0.2s ease-in-out', // 过渡效果应用到所有属性
+    strokeLinecap: 'round', // 添加圆角端点
+    strokeLinejoin: 'round', // 添加圆角连接
   },
   animated: true,
 };
@@ -89,7 +94,7 @@ const SceneEditor = forwardRef(({
   const flowConfig = useMemo(() => ({
     defaultEdgeOptions,
     nodeTypes,
-    minZoom: 0.2,
+    minZoom: 0.1,
     selectionMode: SelectionMode.Partial,
     selectionOnDrag: true,
     panOnDrag: [1],
@@ -131,8 +136,11 @@ const SceneEditor = forwardRef(({
     []
   )
 
+  // 将节点信息转发给父级组件
   useImperativeHandle(ref, () => ({
     setNodes,
+    nodes,
+    edges,
   }));
 
   const selectedNodesRef = useRef<Node[]>([])
@@ -322,6 +330,53 @@ const SceneEditor = forwardRef(({
     //onSave(nodes, edges)
   }, [nodes, edges])
 
+
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  // 添加视图中心对齐函数
+  const centerOnInitialNode = useCallback(() => {
+    if (!reactFlowInstance.current || !initialNodes.length) return;
+
+    reactFlowInstance.current.fitView({
+      padding: 0.5,
+      duration: 800,
+      nodes: [initialNodes[0]],  // 只对齐到初始节点
+      maxZoom: 0.8,
+    });
+  }, [initialNodes]);
+
+  const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+
+  // 修改边的样式处理函数，只处理与拖动节点相关的边
+  const getEdgeStyle = useCallback((edge: Edge) => {
+    const isConnectedToDraggingNode = draggingNodeId &&
+      (edge.source === draggingNodeId || edge.target === draggingNodeId);
+
+    return {
+      ...defaultEdgeOptions.style,
+      opacity: isConnectedToDraggingNode ? 0 : 1,
+      transition: 'opacity 0.2s ease-in-out',
+    };
+  }, [draggingNodeId]);
+
+  // 处理拖动状态，记录正在拖动的节点 ID
+  const handleNodeDragStart = useCallback((_: any, node: Node) => {
+    setDraggingNodeId(node.id);
+  }, []);
+
+  const handleNodeDragStop = useCallback(() => {
+    setDraggingNodeId(null);
+  }, []);
+
+  // 修改边的处理，应用动态样式
+  const styledEdges = useMemo(() => {
+    return edges.map(edge => ({
+      ...edge,
+      style: getEdgeStyle(edge)
+    }));
+  }, [edges, getEdgeStyle]);
+
+
+
   return (
     <div className="flex flex-1 h-full">
       <div
@@ -333,13 +388,20 @@ const SceneEditor = forwardRef(({
         <ReactFlow
           {...flowConfig}
           nodes={nodes}
-          edges={edges}
+          edges={styledEdges}
           onNodesChange={throttledNodesChange}
           onEdgesChange={throttledEdgesChange}
           onConnect={throttledConnect}
           onSelectionChange={debouncedSelectionChange}
           onNodeClick={handleNodeClick}
           onPaneClick={handlePanelClick}
+          onNodeDragStart={handleNodeDragStart} // 添加拖动开始处理
+          onNodeDragStop={handleNodeDragStop}   // 添加拖动结束处理
+          onInit={(instance) => {
+            reactFlowInstance.current = instance;
+            centerOnInitialNode(); // 初始化时中心对齐
+          }}
+          defaultViewport={{ x: 0, y: 0, zoom: 1 }} // 设置默认视口
         >
           <Background />
         </ReactFlow>

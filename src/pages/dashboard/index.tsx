@@ -1,4 +1,4 @@
-import {useState, useRef, Dispatch, SetStateAction} from 'react'
+import {useState, useRef, Dispatch, SetStateAction, useCallback, useEffect} from 'react'
 import { Dialog } from '@headlessui/react'
 import { Node, Edge ,useNodesState} from 'reactflow'
 import { NodeEditor } from "@/components/SceneEditor/NodeEditor";
@@ -7,7 +7,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DocumentTextIcon,
-  ArrowPathRoundedSquareIcon
+  ArrowPathRoundedSquareIcon,
+  CloudIcon
 } from '@heroicons/react/24/outline'
 import SceneEditor from "@/components/SceneEditor";
 import { Toolbar } from "@/components/SceneEditor/ToolBar";
@@ -21,7 +22,7 @@ interface Scene {
   status: 'draft' | 'published'
   // 添加保存场景编辑器的数据
   editorData: {
-    nodes: Node[]
+    nodes: Node<NodeData>[]
     edges: Edge[]
   }
 }
@@ -29,7 +30,7 @@ interface Scene {
 const initStoryNode: Node<NodeData> = {
   id: `story-${Date.now()}`,
   type: 'story',
-  position: { x: 250, y: 5 },
+  position: { x: 0, y: 0 },
   data: {
     title: '起点',
     content: '在这里编写场景的起点...',
@@ -44,11 +45,26 @@ const DashboardPage = ()=> {
   const [newSceneName, setNewSceneName] = useState('')                          // 新场景名称
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null)        // 在场景列表中选择的场景
   const [scenes, setScenes] = useState<Scene[]>([])                             // 左侧场景列表
-  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null) // 选择的节点
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData>| null>(null) // 选择的节点
 
-  const sceneEditorRef = useRef<{ setNodes: Dispatch<SetStateAction<Node<any, string | undefined>[]>> }>(null);
+  // 添加未保存状态
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+// 添加当前场景引用
+  const currentSceneRef = useRef<string | null>(null);
+
+  // 添加上一个场景ID的引用
+  const previousSceneIdRef = useRef<string | null>(null);
+
+  const sceneEditorRef = useRef<{
+    setNodes: Dispatch<SetStateAction<Node[]>> ,
+    nodes: Node[],
+    edges: Edge[]
+  }>(null);
 
   // 处理场景数据更新
+  // 1. 切换场景时更新
+  // 2. 新建场景时，先更新旧场景，然后切换至新场景
   const handleSceneDataUpdate = (sceneId: string, nodes: Node[], edges: Edge[]) => {
     setScenes(currentScenes =>
       currentScenes.map(scene =>
@@ -56,6 +72,7 @@ const DashboardPage = ()=> {
           ? {
             ...scene,
             lastModified: new Date().toISOString(),
+            status: 'published',
             editorData: { nodes, edges }
           }
           : scene
@@ -63,9 +80,17 @@ const DashboardPage = ()=> {
     )
   }
 
-  // 创建新场景
+  // 创建新场景, 初始化场景数据, 这里逻辑正确
   const handleCreateNewScene = () => {
     if (!newSceneName.trim()) return
+
+
+    // 如果有当前选中的场景，保存其状态
+    if (selectedScene && sceneEditorRef.current) {
+      const currentNodes = sceneEditorRef.current.nodes;
+      const currentEdges = sceneEditorRef.current.edges;
+      handleSceneDataUpdate(selectedScene.id,currentNodes,currentEdges)
+    }
 
     const newScene = {
       id: Date.now().toString(),
@@ -78,10 +103,12 @@ const DashboardPage = ()=> {
       }
     }
 
-    setScenes([...scenes, newScene])
-    setNewSceneName('')
-    setIsNewSceneModalOpen(false)
-    setSelectedScene(newScene)
+    // 添加新场景并切换
+    setScenes(prevScenes => [...prevScenes, newScene]);
+    setNewSceneName('');
+    setIsNewSceneModalOpen(false);
+    setSelectedScene(newScene);
+    currentSceneRef.current = newScene.id;
   }
 
   // 处理节点选择
@@ -118,8 +145,6 @@ const DashboardPage = ()=> {
       )
     }
 
-    // TODO:更新react-flow的节点数据
-    // 对于相同的id，只用新节点的data替换旧的，其他不变
     sceneEditorRef.current?.setNodes((nodes) =>
       nodes.map((node) => (node.id === updatedNode.id ? {...node,data:updatedNode.data} : node))
     )
@@ -128,6 +153,48 @@ const DashboardPage = ()=> {
   const handlePanelClick = (status:boolean) => {
     setIsRightPanelOpen(status)
   }
+
+  // 场景切换处理函数 TODO 没有实现保存当前场景
+  const handleSceneChange = useCallback((newScene: Scene) => {
+    // 如果有当前选中的场景，保存其状态
+
+    if (currentSceneRef.current && sceneEditorRef.current) {
+      const currentNodes = sceneEditorRef.current.nodes;
+      const currentEdges = sceneEditorRef.current.edges;
+
+
+      // 更新当前场景的状态到scenes中
+      handleSceneDataUpdate(currentSceneRef.current, currentNodes, currentEdges)
+    }
+
+    // 切换到新场景
+    setSelectedScene(newScene);
+    currentSceneRef.current = newScene.id;
+  }, []);
+
+  // 修改保存按钮的处理函数
+  const handleSave = () => {
+    if (selectedScene && sceneEditorRef.current) {
+      const currentNodes = sceneEditorRef.current.nodes;
+      const currentEdges = sceneEditorRef.current.edges;
+
+      setScenes(prevScenes =>
+        prevScenes.map(scene =>
+          scene.id === selectedScene.id
+            ? {
+              ...scene,
+              lastModified: new Date().toISOString(),
+              status: 'published',
+              editorData: {
+                nodes: currentNodes,
+                edges: currentEdges
+              }
+            }
+            : scene
+        )
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 pt-12">
@@ -190,6 +257,13 @@ const DashboardPage = ()=> {
             {/* 右侧工具按钮组 */}
             <div className="flex items-center space-x-2">
               {/* 这里可以添加更多工具栏按钮 */}
+              <button
+                onClick={handleSave}
+                className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center"
+              >
+                <CloudIcon className="w-5 h-5"/>
+                <span className="ml-1 text-sm">保存</span>
+              </button>
             </div>
           </div>
         </div>
@@ -221,19 +295,19 @@ const DashboardPage = ()=> {
                 {scenes.map((scene) => (
                   <div
                     key={scene.id}
-                    onClick={() => setSelectedScene(scene)}
+                    onClick={() => handleSceneChange(scene)}
                     className={`
-                      p-4 cursor-pointer transition-colors
-                      ${selectedScene?.id === scene.id
+        p-4 cursor-pointer transition-colors
+        ${selectedScene?.id === scene.id
                       ? 'bg-purple-50 dark:bg-purple-900/30'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}
-                    `}
+      `}
                   >
                     <div className="font-medium text-gray-900 dark:text-gray-100">
                       {scene.name}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      最后修改: {new Date(scene.lastModified).toLocaleDateString()}
+                      最后修改: {new Date(scene.lastModified).toLocaleTimeString()}
                     </div>
                     <div className="mt-1">
                       <span className={`
@@ -242,7 +316,7 @@ const DashboardPage = ()=> {
                         ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                         : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}
                       `}>
-                        {scene.status === 'draft' ? '草稿' : '已发布'}
+                        {scene.status === 'draft' ? '草稿' : '已保存'}
                       </span>
                     </div>
                   </div>

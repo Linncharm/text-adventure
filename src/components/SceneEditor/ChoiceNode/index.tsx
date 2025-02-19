@@ -73,7 +73,7 @@ export const ChoiceNode = memo(({ id, data, isConnectable,selected }: NodeProps<
 
   // 确保 choice 节点只能创建一个连接
   const canAddMore = !data.connectedNodes || data.connectedNodes.length < 1
-  console.log("canAddMore", canAddMore,data)
+  // console.log("canAddMore", canAddMore,data)
 
   return (
     <div className={createBaseNodeStyle(COLOR_THEME, selected)}>
